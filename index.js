@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const child_process = require('child_process');
 const fs = require('fs');
 const crypto = require('crypto');
-const { homePath, sshAgentCmd, sshAddCmd, gitCmd } = require('./paths.js');
+const { homePath, sshConfigPath, sshAgentCmd, sshAddCmd, gitCmd } = require('./paths.js');
 
 try {
     const privateKey = core.getInput('ssh-private-key');
@@ -73,9 +73,10 @@ try {
         const sshConfig = `\nHost key-${sha256}.github.com\n`
                               + `    HostName github.com\n`
                               + `    IdentityFile ${homeSsh}/key-${sha256}\n`
-                              + `    IdentitiesOnly yes\n`;
+                              + `    IdentitiesOnly yes\n`
+                              + `    UserKnownHostsFile ${homeSsh}/known_hosts\n`;
 
-        fs.appendFileSync(`${homeSsh}/config`, sshConfig);
+        fs.appendFileSync(sshConfigPath, sshConfig);
 
         console.log(`Added deploy-key mapping: Use identity '${homeSsh}/key-${sha256}' for GitHub repository ${ownerAndRepo}`);
     });

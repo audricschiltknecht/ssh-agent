@@ -322,7 +322,7 @@ const core = __webpack_require__(470);
 const child_process = __webpack_require__(129);
 const fs = __webpack_require__(747);
 const crypto = __webpack_require__(417);
-const { homePath, sshAgentCmd, sshAddCmd, gitCmd } = __webpack_require__(972);
+const { homePath, sshConfigPath, sshAgentCmd, sshAddCmd, gitCmd } = __webpack_require__(972);
 
 try {
     const privateKey = core.getInput('ssh-private-key');
@@ -393,9 +393,10 @@ try {
         const sshConfig = `\nHost key-${sha256}.github.com\n`
                               + `    HostName github.com\n`
                               + `    IdentityFile ${homeSsh}/key-${sha256}\n`
-                              + `    IdentitiesOnly yes\n`;
+                              + `    IdentitiesOnly yes\n`
+                              + `    UserKnownHostsFile ${homeSsh}/known_hosts\n`;
 
-        fs.appendFileSync(`${homeSsh}/config`, sshConfig);
+        fs.appendFileSync(sshConfigPath, sshConfig);
 
         console.log(`Added deploy-key mapping: Use identity '${homeSsh}/key-${sha256}' for GitHub repository ${ownerAndRepo}`);
     });
@@ -2906,12 +2907,14 @@ module.exports = (process.env['OS'] != 'Windows_NT') ? {
     // Use getent() system call, since this is what ssh does; makes a difference in Docker-based
     // Action runs, where $HOME is different from the pwent
     homePath: os.userInfo().homedir,
+    sshConfigPath: `${os.userInfo().homedir}/.ssh/config`,
     sshAgentCmd: 'ssh-agent',
     sshAddCmd: 'ssh-add',
     gitCmd: 'git'
 } : {
     // Assuming GitHub hosted `windows-*` runners for now
     homePath: os.homedir(),
+    sshConfigPath: 'c://progra~1//git//etc//ssh//ssh_config',
     sshAgentCmd: 'c://progra~1//git//usr//bin//ssh-agent.exe',
     sshAddCmd: 'c://progra~1//git//usr//bin//ssh-add.exe',
     gitCmd: 'c://progra~1//git//bin//git.exe'
